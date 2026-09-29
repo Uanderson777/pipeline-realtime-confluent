@@ -1,35 +1,32 @@
-# ?? Pipeline Real-Time End-to-End com Confluent Cloud & Flink
+# Pipeline em Tempo Real End-to-End com Confluent Cloud
 
-Este repositório contém a resolução do Desafio de Projeto da **DIO**, demonstrando a construção de um pipeline de dados em tempo real utilizando **Apache Kafka**, **Confluent Cloud** e **Flink SQL** para detecção de fraudes.
+Projeto desenvolvido para o Desafio de Projeto da DIO, utilizando Confluent Cloud, Apache Kafka e Apache Flink SQL para processamento de transaÃ§Ãµes em tempo real e detecÃ§Ã£o de possÃ­veis fraudes.
 
----
+## Objetivo
 
-## ?? Arquitetura do Pipeline
- 1. **Ingestão:** Transações enviadas para o tópico `transactions` no Kafka Cloud.
-2. **Processamento:** Flink SQL escuta o fluxo em tempo real e identifica transações suspeitas ou de alto valor (> R$ 10.000,00).
-3. **Saída:** Resultados gravados no tópico de alertas `fraud_alerts`.
+Construir um pipeline de dados em tempo real capaz de receber transaÃ§Ãµes, processar os eventos com Flink SQL e identificar situaÃ§Ãµes de possÃ­vel fraude.
 
----
+A regra de fraude utilizada neste projeto Ã©:
 
-## ?? Passo a Passo de Execução
+> 3 transaÃ§Ãµes do mesmo cartÃ£o dentro de uma janela de 60 segundos.
 
-### Passo 1 - Setup do Cluster e Ambiente (Confluent Cloud)
-- Criação do cluster Kafka no ambiente `default` (região AWS `sa-east-1`).
-- Configuração de API Keys e credenciais de acesso ao cluster.
+## Arquitetura
 
-### Passo 2 - Criação dos Tópicos no Kafka
-- `transactions`: Tópico responsável por receber o fluxo de entrada.
-- `fraud_alerts`: Tópico responsável por receber os alertas processados.
-
-### Passo 3 - Processamento em Tempo Real com Flink SQL
-- Criação da Compute Pool do Flink no Confluent Cloud.
-- Execução das queries SQL de janelamento e filtragem CEP (Complex Event Processing) no Workspace SQL.
-
----
-
-## ?? Teardown / Desmembramento do Cluster
-
-Para evitar custos indesejados no ambiente Cloud:
-- Exclusão do Workspace Flink SQL.
-- Remoção dos tópicos `transactions` e `fraud_alerts`.
-- Exclusão do Cluster Kafka (`cluster-desafio-dio`).
+```text
+TransaÃ§Ãµes
+    |
+    v
+Kafka / Confluent Cloud
+    |
+    | transactions
+    v
+Flink SQL
+    |
+    | Janela de 60 segundos
+    | Agrupamento por cartÃ£o
+    | Contagem de transaÃ§Ãµes
+    v
+DetecÃ§Ã£o de possÃ­vel fraude
+    |
+    v
+fraud_alerts
