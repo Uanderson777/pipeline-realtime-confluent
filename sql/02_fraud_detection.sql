@@ -1,14 +1,21 @@
--- Processamento e filtragem em tempo real no Flink SQL
-INSERT INTO fraud_alerts
-SELECT 
-    account_id,
+
+-- Detecção de fraude em tempo real com Flink SQL
+-- Regra: 3 transações do mesmo cartão dentro de uma janela de 60 segundos
+
+SELECT
     card_id,
-    MIN(transaction_time) AS first_txn,
-    MAX(transaction_time) AS last_txn,
-    COUNT(*) AS txn_count
-FROM transactions
-WHERE amount > 10000.00
-GROUP BY 
-    account_id, 
-    card_id, 
-    TUMBLE(transaction_time, INTERVAL '1' MINUTE);
+    COUNT(*) AS transaction_count,
+    MIN(transaction_ts) AS first_transaction,
+    MAX(transaction_ts) AS last_transaction
+FROM TABLE(
+    TUMBLE(
+        TABLE `default`.`cluster-desafio-dio`.`transactions`,
+        DESCRIPTOR(transaction_ts),
+        INTERVAL '60' SECOND
+    )
+)
+GROUP BY
+    window_start,
+    window_end,
+    card_id
+HAVING COUNT(*) >= 3;
